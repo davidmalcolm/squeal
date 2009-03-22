@@ -167,7 +167,7 @@ class Tui(object):
                 self._repaint_cell(self.row, self.col)
                 
             self.refresh()
-            stdscr.addstr(0,0, "(%i, %i, %i, %i)" %(self.row, self.col, self.scroll_y, self.scroll_x))
+            #stdscr.addstr(0,0, "(%i, %i, %i, %i)" %(self.row, self.col, self.scroll_y, self.scroll_x))
             stdscr.refresh()
 
     def get_num_rows(self):
