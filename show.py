@@ -168,6 +168,7 @@ class Query(object):
         col_names = []
         inputs = []
         distinct = False
+        from_idx = None
         # simplistic, buggy parser:
 
         # split whitespace in args (really?  what about quoting?)
@@ -181,16 +182,23 @@ class Query(object):
                     continue
 
                 if arg.lower() == 'from':
+                    from_idx = i
                     break
             
                 if arg[-1] == ',':
                     arg = arg[:-1]
                 col_names.append(arg)
 
-	    # OK, either got a "from" or have no args
-	    # Try to extract inputs:
-	    print i
-            j = i+1
+            if from_idx is None:
+                # Special-case:  "from" was omitted; treat all args as inputs:
+                col_names = []
+                inputs_idx = 0
+            else:
+                inputs_idx = i+1
+
+            # OK, either got a "from" or have no args
+            # Try to extract inputs:		
+            j = inputs_idx
             while j<len(args):
                 # look for input sources:
                 arg = args[j]
