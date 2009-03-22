@@ -79,9 +79,9 @@ Or even an TUI (ncurses?)
 import re
 import sys
 # print sys.argv
-import table
+import show.table
 
-from query import *
+from show.query import *
 
 class UnknownFile(Exception):
     def __init__(self, filename):
@@ -95,15 +95,15 @@ class UnknownFile(Exception):
 
 def get_input(string):
     if re.match('/var/log/httpd/(ssl_)?access_log*', string):
-        from httpdlog import HttpdLog
+        from show.httpdlog import HttpdLog
         return HttpdLog(string)
     if re.match('/var/log/yum.log*', string):
-        from yumlog import YumLog
+        from show.yumlog import YumLog
         return YumLog(string)
     if string == 'proc':
         return Proc()
     if string == 'rpm':
-        from rpmdb import RpmDb
+        from show.rpmdb import RpmDb
         return RpmDb()
     return None
     #raise UnknownFile(string)
@@ -283,7 +283,7 @@ def run_query(args):
     else:
         if sys.stdout.isatty():
             # We're connected to a TTY, go into text UI mode:
-            from tui import Tui
+            from show.tui import Tui
             ui = Tui(q, options)
             ui.main()
         else:
