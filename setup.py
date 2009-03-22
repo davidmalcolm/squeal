@@ -3,7 +3,7 @@
 from setuptools import setup, find_packages
 
 setup(name="show",
-      version="0.1",
+      version="0.1.1",
       description="SQL-style querying for the command line",
       author="David Malcolm",
       author_email="dmalcolm@redhat.com.com",
