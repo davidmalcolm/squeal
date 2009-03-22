@@ -241,14 +241,14 @@ class Query(object):
 
 def as_table(query, out):
     iter = query.execute()
-    t = table.Table(columnHeadings=query.col_names)
+    t = show.table.Table(columnHeadings=query.col_names)
     for row in iter:
         t.add_row(row)
     t.print_(sys.stdout)
 
 def as_html(query, out):
     iter = query.execute()
-    t = table.Table(columnHeadings=query.col_names)
+    t = show.table.Table(columnHeadings=query.col_names)
     for row in iter:
         t.add_row(row)
     t.to_html(out)
