@@ -117,6 +117,7 @@ def get_input(string):
         from show.yumlog import YumLog
         return YumLog(string)
     if string == 'proc':
+        from show.proc import Proc        
         return Proc()
     if string == 'rpm':
         from show.rpmdb import RpmDb
@@ -283,7 +284,7 @@ def usage():
 def run_query(args):
     import getopt
     from optparse import OptionParser
-    usage = "usage: %prog [options] ([COL1] [COL2] ... | * ) from (FILE | DATASRC) ..."
+    usage = "usage: %prog [options] [[COL1 COL2 ... | * ] from] (FILE | DATASRC) ..."
     parser = OptionParser(usage=usage)
     parser.add_option("-f", "--format", dest="format",
                       help="select output format (html)", metavar="FORMAT")

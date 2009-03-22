@@ -16,17 +16,32 @@
 # Red Hat Author(s): David Hugh Malcolm <dmalcolm@redhat.com>
 
 from query import *
-
+import os
 class Proc(DictSource):
     def get_columns(self):
-        return [IntColumn('', 'pid'), StringColumn('', 'cmdline')]
+        return [IntColumn('', 'pid'), 
+                StringColumn('', 'exe'),
+                StringColumn('', 'cmdline')]
+
+    def get_filename(self, pid, name):
+        return '/proc/%i/%s' % (pid, name)
+
+    def get_content(self, pid, filename):
+        return open(self.get_filename(pid, filename)).read()
+
+    def get_link(self, pid, filename):
+        try:
+            return os.path.realpath(self.get_filename(pid, filename))
+        except OSError:
+            return None # permission failed?
 
     def get_tuples_as_dicts(self):
         import os
         for d in os.listdir('/proc'):
             if re.match('[0-9]+', d):
-                dir = os.path.join('/proc', d)
+                pid = int(d)                
                 yield dict(pid=int(d),
-                           cmdline=open(os.path.join(dir, 'cmdline')).read())
+                           exe=self.get_link(pid, 'exe'),
+                           cmdline=self.get_content(pid, 'cmdline'))
 
 
