@@ -8,7 +8,7 @@ Summary:        "show" is a SQL-like interface for the command line
 Group:          Development/Languages
 License:        LGPLv2.1
 URL:            https://fedorahosted.org/show
-Source0:        show-0.1.tar.gz
+Source0:        show-0.1.1.tar.gz
 BuildRoot:      %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
 BuildArch:      noarch
