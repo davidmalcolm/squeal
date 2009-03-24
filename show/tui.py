@@ -137,9 +137,17 @@ class Tui(object):
             elif c == curses.KEY_LEFT:
                 if self.col > 0:
                     self.col -= 1
+                    if self.column_x[self.col] < self.scroll_x:
+                        self.scroll_x -= self.stdscr.getmaxyx()[1]
+                        if self.scroll_x < 0:
+                            self.scroll_x = 0
             elif c == curses.KEY_RIGHT:
                 if self.col < self.get_num_cols()-1:
                     self.col += 1
+                    if self.column_x[self.col]+self.col_widths[self.col] > self.scroll_x+self.stdscr.getmaxyx()[1]:
+                        self.scroll_x += self.stdscr.getmaxyx()[1]
+                        if self.scroll_x >= self.get_max_scroll_x():
+                            self.scroll_x = self.get_max_scroll_x()-1
             elif c == curses.KEY_PPAGE:
                 self.row -= (stdscr.getmaxyx()[0]-3)
                 if self.row < 0:
