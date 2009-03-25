@@ -142,7 +142,13 @@ class Database(object):
     def __init__(self, columns):
         self.columns = columns
 
-        import sqlite3 as sqlite
+        try:
+            from pysqlite2 import dbapi2 as sqlite
+        except ImportError, e:
+            try:
+                from sqlite3 import dbapi2 as sqlite
+            except ImportError:
+                raise e
         self.conn = sqlite.connect(':memory:')
         c = self.conn.cursor()
         # Create table
