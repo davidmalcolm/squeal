@@ -92,6 +92,7 @@ Roundtrip from output to input
 Detect if attached to a tty; prettyprint and page automatically, and highlight columns, etc? c.f. git
 Or even an TUI (ncurses?)
 '''
+import os
 import re
 import sys
 # print sys.argv
@@ -109,7 +110,7 @@ class UnknownFile(Exception):
     def __str__(self):
         return 'UnknownFile(%s)' % repr(self.filename)
 
-def get_input(string):
+def get_input_from_file(string):
     if re.match('^/var/log/httpd/(ssl_)?access_log.*$', string):
         from show.httpdlog import HttpdLog
         return HttpdLog(string)
@@ -122,6 +123,12 @@ def get_input(string):
     if re.match('^/var/log/secure.*$', string):
         from show.syslog import SysLog
         return SysLog(string)
+
+    # Try to use Augeas:
+    from show.augeasfile import AugeasFile
+    return AugeasFile(string)
+
+def get_input(string):
     if string == 'proc':
         from show.proc import Proc        
         return Proc()
@@ -129,11 +136,8 @@ def get_input(string):
         from show.rpmdb import RpmDb
         return RpmDb()
 
-    # Try to use Augeas:
-    import os
     if os.path.isfile(string):
-        from show.augeasfile import AugeasFile
-        return AugeasFile(string)
+        return get_input_from_file(string)
 
     return None
     #raise UnknownFile(string)
