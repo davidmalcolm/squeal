@@ -111,6 +111,7 @@ class UnknownFile(Exception):
         return 'UnknownFile(%s)' % repr(self.filename)
 
 def get_input_from_file(string):
+    # Special-case certain absolute paths:
     if re.match('^/var/log/httpd/(ssl_)?access_log.*$', string):
         from show.httpdlog import HttpdLog
         return HttpdLog(string)
@@ -123,6 +124,13 @@ def get_input_from_file(string):
     if re.match('^/var/log/secure.*$', string):
         from show.syslog import SysLog
         return SysLog(string)
+
+    # Try to use "file" to get libmagic to detect the file type
+    from subprocess import Popen, PIPE
+    magic_type = Popen(["file", '-b', string], stdout=PIPE).communicate()[0]
+    if re.match('^tcpdump capture file.*', magic_type):
+        from show.tcpdump import TcpDump
+        return TcpDump(string)
 
     # Try to use Augeas:
     from show.augeasfile import AugeasFile
