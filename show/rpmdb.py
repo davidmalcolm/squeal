@@ -26,6 +26,13 @@ class RpmDb(DictSource):
                 StringColumn('', 'arch'),
                 StringColumn('', 'vendor')]
 
+    def get_field(self, h, tag):
+        # rpm sometimes gives empty lists rather than None for "vendor":
+        val = h[tag]
+        if val == []:
+            return None
+        return val
+
     def get_tuples_as_dicts(self):
         # Put entire rpm db into our db,
         # and do our querying there
@@ -34,11 +41,12 @@ class RpmDb(DictSource):
         ts.setVSFlags(-1) # disable all verifications
         mi = ts.dbMatch()
         for h in mi: 
-            yield dict(name=h[rpm.RPMTAG_NAME],
-                       epoch=h[rpm.RPMTAG_EPOCH],
-                       version=h[rpm.RPMTAG_VERSION],
-                       release=h[rpm.RPMTAG_RELEASE],
-                       arch=h[rpm.RPMTAG_ARCH],
-                       vendor=h[rpm.RPMTAG_VENDOR],)
+            yield dict(name=self.get_field(h, rpm.RPMTAG_NAME),
+                       epoch=self.get_field(h, rpm.RPMTAG_EPOCH),
+                       version=self.get_field(h, rpm.RPMTAG_VERSION),
+                       release=self.get_field(h, rpm.RPMTAG_RELEASE),
+                       arch=self.get_field(h, rpm.RPMTAG_ARCH),
+                       vendor=self.get_field(h, rpm.RPMTAG_VENDOR),
+                       )
 
 
