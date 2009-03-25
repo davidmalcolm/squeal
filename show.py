@@ -110,13 +110,16 @@ class UnknownFile(Exception):
         return 'UnknownFile(%s)' % repr(self.filename)
 
 def get_input(string):
-    if re.match('/var/log/httpd/(ssl_)?access_log*', string):
+    if re.match('^/var/log/httpd/(ssl_)?access_log.*$', string):
         from show.httpdlog import HttpdLog
         return HttpdLog(string)
-    if re.match('/var/log/yum.log*', string):
+    if re.match('^/var/log/yum.log.*$', string):
         from show.yumlog import YumLog
         return YumLog(string)
-    if string == '/var/log/messages':
+    if re.match('^/var/log/messages.*$', string):
+        from show.syslog import SysLog
+        return SysLog(string)
+    if re.match('^/var/log/secure.*$', string):
         from show.syslog import SysLog
         return SysLog(string)
     if string == 'proc':
