@@ -125,6 +125,13 @@ def get_input(string):
     if string == 'rpm':
         from show.rpmdb import RpmDb
         return RpmDb()
+
+    # Try to use Augeas:
+    import os
+    if os.path.isfile(string):
+        from show.augeasfile import AugeasFile
+        return AugeasFile(string)
+
     return None
     #raise UnknownFile(string)
 
