@@ -56,3 +56,46 @@ Looking in RPM database by vendor:
 
 # Output as HTML:
 $ show --format=html from rpm > test.html
+
+# Looking in sys logs:
+$ show "count(*)", source from /var/log/messages* group by source order by "count(*)" desc
+
+count(*)|source              |
+--------+--------------------+
+1633    |kernel              |
+1324    |NetworkManager      |
+98	|ntpd                |
+70	|avahi-daemon        |
+63	|dhclient            |
+48	|setroubleshoot      |
+39	|dnsmasq             |
+29	|nm-system-settings  |
+27	|bluetoothd          |
+14	|/usr/sbin/gpm       |
+13	|acpid               |
+10	|init                |
+9	|pcscd               |
+9	|pulseaudio          |
+6	|gnome-keyring-ask   |
+6	|gnome-keyring-daemon|
+6	|gnome-session       |
+6	|rsyslogd            |
+5	|rpc.statd           |
+4	|vpnc                |
+3	|gdm-session-worker  |
+2	|auditd              |
+2	|console-kit-daemon  |
+2	|libvirtd            |
+2	|rpcbind             |
+1	|nm-dispatcher.action|
+1	|restorecond         |
+
+
+Other queries:
+$ show /var/log/secure* where message like \"%authentication failure%\"
+
+$ show /etc/yum.repos.d/*.repo where gpgcheck != \'"1"\'
+$ show /etc/xinetd.d/*
+$ show /etc/aliases
+$ show /etc/inittab
+$ show /etc/passwd where shell !=\'/sbin/nologin\'
