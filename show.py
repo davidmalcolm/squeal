@@ -110,31 +110,31 @@ class UnknownFile(Exception):
     def __str__(self):
         return 'UnknownFile(%s)' % repr(self.filename)
 
-def get_input_from_file(string):
+def get_input_from_file(filename):
     # Special-case certain absolute paths:
-    if re.match('^/var/log/httpd/(ssl_)?access_log.*$', string):
+    if re.match('^/var/log/httpd/(ssl_)?access_log.*$', filename):
         from show.httpdlog import HttpdLog
-        return HttpdLog(string)
-    if re.match('^/var/log/yum.log.*$', string):
+        return HttpdLog(filename)
+    if re.match('^/var/log/yum.log.*$', filename):
         from show.yumlog import YumLog
-        return YumLog(string)
-    if re.match('^/var/log/messages.*$', string):
+        return YumLog(filename)
+    if re.match('^/var/log/messages.*$', filename):
         from show.syslog import SysLog
-        return SysLog(string)
-    if re.match('^/var/log/secure.*$', string):
+        return SysLog(filename)
+    if re.match('^/var/log/secure.*$', filename):
         from show.syslog import SysLog
-        return SysLog(string)
+        return SysLog(filename)
 
     # Try to use "file" to get libmagic to detect the file type
     from subprocess import Popen, PIPE
-    magic_type = Popen(["file", '-b', string], stdout=PIPE).communicate()[0]
+    magic_type = Popen(["file", '-b', filename], stdout=PIPE).communicate()[0]
     if re.match('^tcpdump capture file.*', magic_type):
         from show.tcpdump import TcpDump
-        return TcpDump(string)
+        return TcpDump(filename)
 
     # Try to use Augeas:
     from show.augeasfile import AugeasFile
-    return AugeasFile(string)
+    return AugeasFile(filename)
 
 def get_input(string):
     if string == 'proc':
