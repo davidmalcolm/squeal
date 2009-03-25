@@ -116,6 +116,9 @@ def get_input(string):
     if re.match('/var/log/yum.log*', string):
         from show.yumlog import YumLog
         return YumLog(string)
+    if string == '/var/log/messages':
+        from show.syslog import SysLog
+        return SysLog(string)
     if string == 'proc':
         from show.proc import Proc        
         return Proc()
