@@ -138,16 +138,21 @@ class Table:
         
     def __str__(self):
         colWidths = self._calc_col_widths()
+        import cStringIO
+        output = cStringIO.StringIO()
         r = TextTableRenderer(colWidths)
-        return r.render_table(self)
+        r.render_table(self, output)
+        contents = output.getvalue()
+        output.close()
+        return contents
 
-    def print_(self, out):
+    def write_as_text(self, out):
         colWidths = self._calc_col_widths()
         r = TextTableRenderer(colWidths)
         return r.render_table(self, out)
 
 
-    def to_html(self, out):
+    def write_as_html(self, out):
         r = HtmlTableRenderer()
         return r.render_table(self, out)
 

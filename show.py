@@ -300,14 +300,14 @@ def as_table(query, out):
     t = show.table.Table(columnHeadings=query.col_names)
     for row in iter:
         t.add_row(row)
-    t.print_(sys.stdout)
+    t.write_as_text(sys.stdout)
 
 def as_html(query, out):
     iter = query.execute()
     t = show.table.Table(columnHeadings=query.col_names)
     for row in iter:
         t.add_row(row)
-    t.to_html(out)
+    t.write_as_html(out)
 
 def as_text(query, out):
     iter = query.execute()
