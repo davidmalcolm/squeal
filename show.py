@@ -93,20 +93,13 @@ Detect if attached to a tty; prettyprint and page automatically, and highlight c
 Or even an TUI (ncurses?)
 '''
 import sys
-import show.table
 
 def as_table(query, out):
-    iter = query.execute()
-    t = show.table.Table(columnHeadings=query.col_names)
-    for row in iter:
-        t.add_row(row)
+    t = query.make_table()
     t.write_as_text(out)
 
 def as_html(query, out):
-    iter = query.execute()
-    t = show.table.Table(columnHeadings=query.col_names)
-    for row in iter:
-        t.add_row(row)
+    t = query.make_table()
     t.write_as_html(out)
 
 def as_text(query, out):

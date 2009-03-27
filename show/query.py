@@ -270,3 +270,13 @@ class Query(object):
 
         return db.query(self.distinct, self.col_names, self.stuff)
 
+    def make_table(self):
+        """
+        Execute the table, creating a show.table.Table holding the results
+        """
+        from show.table import Table
+        iter = self.execute()
+        t = Table(columnHeadings=self.col_names)
+        for row in iter:
+            t.add_row(row)
+        return t
