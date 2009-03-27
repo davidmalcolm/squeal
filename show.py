@@ -309,6 +309,13 @@ def as_html(query, out):
         t.add_row(row)
     t.to_html(out)
 
+def as_text(query, out):
+    iter = query.execute()
+    for row in iter:
+        for i, col_name in enumerate(query.col_names):
+            out.write('"%s" ' % row[i]) # FIXME: should we do any escaping?
+        out.write('\n')
+
 def usage():
     pass
 
@@ -316,9 +323,15 @@ def run_query(args):
     import getopt
     from optparse import OptionParser
     usage = "usage: %prog [options] [[COL1 COL2 ... | * ] from] (FILE | DATASRC) ..."
+    formatters = {'html':as_html,
+                  'table':as_table,
+                  'text':as_text,
+                  }
     parser = OptionParser(usage=usage)
     parser.add_option("-f", "--format", dest="format",
-                      help="select output format (html)", metavar="FORMAT")
+                      help='select output format: %s ' \
+                            % ' '.join(['"%s"' % key for key in formatters.keys()]),
+                      metavar="FORMAT")
     (options, args) = parser.parse_args()
     
     #print options
@@ -326,10 +339,6 @@ def run_query(args):
     q = Query.from_args(args)
 
     if options.format:
-       
-        formatters = {'html':as_html,
-                      }
-  
         try:
             formatter = formatters[options.format]
         except KeyError:
