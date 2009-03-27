@@ -22,14 +22,14 @@ class DictSource(object):
     def get_columns(self):
         raise NotImplementedError
 
-    def get_tuples_as_dicts(self):
+    def iter_dicts(self):
         raise NotImplementedError
 
 class FileDictSource(DictSource):
     def __init__(self, filename):
         self.filename = filename
 
-    def get_tuples_as_dicts(self):
+    def iter_dicts(self):
         for line in self.get_lines():
             d = self.parse_as_dict(line)
             if d:
@@ -76,9 +76,9 @@ class MergedFileInputs(DictSource):
     def get_columns(self):
         return self.inputs[0].get_columns() + [StringColumn('', 'filename')]
 
-    def get_tuples_as_dicts(self):
+    def iter_dicts(self):
         for i in self.inputs:
-            for tuple in i.get_tuples_as_dicts():
+            for tuple in i.iter_dicts():
                 tuple['filename'] = i.filename
                 yield tuple
         

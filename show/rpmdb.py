@@ -33,7 +33,7 @@ class RpmDb(DictSource):
             return None
         return val
 
-    def get_tuples_as_dicts(self):
+    def iter_dicts(self):
         # Put entire rpm db into our db,
         # and do our querying there
         import rpm

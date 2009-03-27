@@ -35,7 +35,7 @@ class Proc(DictSource):
         except OSError:
             return None # permission failed?
 
-    def get_tuples_as_dicts(self):
+    def iter_dicts(self):
         import os
         for d in os.listdir('/proc'):
             if re.match('[0-9]+', d):

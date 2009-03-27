@@ -290,7 +290,7 @@ class Query(object):
 
         db = self.create_db(columns)
 
-        for d in self.input.get_tuples_as_dicts():
+        for d in self.input.iter_dicts():
             db.insert_row(d)
 
         return db.query(self.distinct, self.col_names, self.stuff)

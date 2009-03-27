@@ -43,7 +43,7 @@ class TcpDump(DictSource):
                 StringColumn('', 'details'),
                 ]                
 
-    def get_tuples_as_dicts(self):
+    def iter_dicts(self):
         for line in self._run_tcpdump(self.filename):
             d = self.parse_as_dict(line)
             if d:
