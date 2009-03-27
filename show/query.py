@@ -122,3 +122,151 @@ class Parser:
         self.regexp += column.regexp
         self.columns.append(column)
 
+
+class Database(object):
+    def __init__(self, columns):
+        self.columns = columns
+
+        try:
+            from pysqlite2 import dbapi2 as sqlite
+        except ImportError, e:
+            try:
+                from sqlite3 import dbapi2 as sqlite
+            except ImportError:
+                raise e
+        self.conn = sqlite.connect(':memory:')
+        c = self.conn.cursor()
+        # Create table
+        sql = 'CREATE TABLE lines ('
+        sql += ', '.join('%s %s' % (c.name, c.sql_type()) for c in columns)
+        sql += ')'
+        #print sql
+        c.execute(sql)
+        self.conn.commit()
+        c.close()
+
+    def insert_row(self, arg_dict):
+        #print arg_dict
+        values = []
+        for col in self.columns:
+            try:
+                val = arg_dict[col.name]
+            except KeyError:
+                val = None
+            values.append(val)
+
+        c = self.conn.cursor()
+        sql = 'INSERT INTO lines VALUES ('
+        sql += ','.join(['?' for v in values])
+        sql += ')'
+        c.execute(sql, values)
+        self.conn.commit()
+        c.close()
+
+    def query(self, distinct, cols, stuff):
+        c = self.conn.cursor()
+        sql = 'SELECT '
+        if distinct:
+            sql += 'DISTINCT '
+        sql += ','.join(cols) # FIXME: need a real parser/sqlgenerator here; sqlalchemy?
+        sql += ' FROM lines '
+        sql += ' '.join(stuff) # FIXME: ditto; sqlalchemy?
+        # print sql
+        c.execute(sql)
+        for row in c:
+            yield row
+        c.close()
+
+class Query(object):
+    def __init__(self, distinct, col_names, input, stuff):
+        self.distinct = distinct
+        self.col_names = col_names
+        self.input = input
+        self.stuff = stuff
+
+    @classmethod
+    def from_args(cls, args):
+        from show.inputs import get_input
+        
+        col_names = []
+        inputs = []
+        distinct = False
+        from_idx = None
+        # simplistic, buggy parser:
+
+        # split whitespace in args (really?  what about quoting?)
+        #args = reduce(sum, [arg.split() for arg in args])
+	print args
+        if len(args)>0:
+            for i in range(len(args)):
+                arg = args[i]
+                if arg.lower() == 'distinct':
+                    distinct = True
+                    continue
+
+                if arg.lower() == 'from':
+                    from_idx = i
+                    break
+            
+                if arg[-1] == ',':
+                    arg = arg[:-1]
+                col_names.append(arg)
+
+            if from_idx is None:
+                # Special-case:  "from" was omitted; treat all args as inputs:
+                col_names = []
+                inputs_idx = 0
+            else:
+                inputs_idx = i+1
+
+            # OK, either got a "from" or have no args
+            # Try to extract inputs:		
+            j = inputs_idx
+            while j<len(args):
+                # look for input sources:
+                arg = args[j]
+                print arg
+
+                input = get_input(arg)
+                if input:
+                    inputs.append(input)
+                    j += 1
+                else:
+                    # not recognized as an input
+                    # hopefully the rest of the arguments (if any) are SQL clauses
+                    break
+
+        if inputs == []:
+            # FIXME: handle this better! e.g. introspect and show the backends?
+            raise "No inputs"
+
+        #print 'inputs:',inputs
+        if len(inputs)>1:
+            input = MergedFileInputs(inputs)
+        else: 
+            input = inputs[0]
+            
+        if col_names == ['*'] or col_names == []:
+            col_names = [c.name for c in input.get_columns()]
+
+        q = Query(distinct, col_names, input, args[j:])
+        return q
+
+    def __repr__(self):
+        return 'Query(%s, %s, %s)' \
+               % (repr(self.col_names), repr(self.input), repr(self.stuff))
+
+    def create_db(self, columns):
+        return Database(columns)
+    
+    def execute(self):
+        # Generate an iterator over result
+        columns = self.input.get_columns()
+
+        db = self.create_db(columns)
+
+        for d in self.input.iter_dicts():
+            db.insert_row(d)
+
+        return db.query(self.distinct, self.col_names, self.stuff)
+
