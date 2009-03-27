@@ -112,7 +112,7 @@ class Tests(unittest.TestCase):
         self.assertEquals(d['arch'], 'i386')
         self.assertEquals(d['epoch'], '1')
         self.assertEquals(d['version'], '5.4.2.1')
-        self.assertEquals(d['release'], '2.fc10.i386')
+        self.assertEquals(d['release'], '2.fc10')
 
         d = p.parse_as_dict("Dec 18 14:21:26 Erased: Django-docs")
         self.assertEquals(d['time'], 'Dec 18 14:21:26')
