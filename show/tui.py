@@ -41,7 +41,7 @@ class Tui(object):
         wrapper(self.wrapped_main)
 
     def _repaint_heading(self):
-        for col_idx, col_name in enumerate(self.query.col_names):
+        for col_idx, col_name in enumerate(self.query.expr_names):
             x = self.column_x[col_idx]
             if col_idx==self.col:
                 attr = curses.A_STANDOUT
@@ -59,7 +59,7 @@ class Tui(object):
     
     def get_value(self, row_idx, col_idx):
         #return '(%s,%s)' % (row_idx, col_idx)
-        col_name = self.query.col_names[col_idx]
+        col_name = self.query.expr_names[col_idx]
         row = self.rows[row_idx]
         return str(row[col_idx])
 
@@ -88,7 +88,7 @@ class Tui(object):
         stdscr.refresh()
 
         iter = self.query.execute()
-        self.table = table.Table(columnHeadings=self.query.col_names)
+        self.table = table.Table(columnHeadings=self.query.expr_names)
         for row in iter:
             self.table.add_row(row)
             self.rows.append(row)
@@ -182,7 +182,7 @@ class Tui(object):
         return len(self.rows)
 
     def get_num_cols(self):
-        return len(self.query.col_names)
+        return len(self.query.expr_names)
 
     def get_visible_rows(self):
         return self.stdscr.getmaxyx()[0] - 3

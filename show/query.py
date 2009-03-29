@@ -198,15 +198,15 @@ class Database(object):
         c.close()
 
 class Query(object):
-    def __init__(self, distinct, col_names, input, stuff):
+    def __init__(self, distinct, expr_names, input, stuff):
         self.distinct = distinct
-        self.col_names = col_names
+        self.expr_names = expr_names
         self.input = input
         self.stuff = stuff
 
     def __repr__(self):
         return 'Query(%s, %s, %s)' \
-               % (repr(self.col_names), repr(self.input), repr(self.stuff))
+               % (repr(self.expr_names), repr(self.input), repr(self.stuff))
 
     def create_db(self, columns):
         return Database(columns)
@@ -220,7 +220,7 @@ class Query(object):
         for d in self.input.iter_dicts():
             db.insert_row(d)
 
-        return db.query(self.distinct, self.col_names, self.stuff)
+        return db.query(self.distinct, self.expr_names, self.stuff)
 
     def make_table(self):
         """
@@ -228,7 +228,7 @@ class Query(object):
         """
         from show.table import Table
         iter = self.execute()
-        t = Table(columnHeadings=self.col_names)
+        t = Table(columnHeadings=self.expr_names)
         for row in iter:
             t.add_row(row)
         return t
@@ -237,7 +237,7 @@ class QueryParser(object):
     def parse_args(self, options, args):
         from show.inputs import get_input
         
-        col_names = []
+        expr_names = []
         inputs = []
         distinct = False
         from_idx = None
@@ -259,11 +259,11 @@ class QueryParser(object):
             
                 if arg[-1] == ',':
                     arg = arg[:-1]
-                col_names.append(arg)
+                expr_names.append(arg)
 
             if from_idx is None:
                 # Special-case:  "from" was omitted; treat all args as inputs:
-                col_names = []
+                expr_names = []
                 inputs_idx = 0
             else:
                 inputs_idx = i+1
@@ -293,14 +293,37 @@ class QueryParser(object):
             input = MergedFileInputs(inputs)
         else: 
             input = inputs[0]
-            
-        if col_names == ['*'] or col_names == []:
-            col_names = [c.name for c in input.get_columns()]
 
-        q = Query(distinct, col_names, input, args[j:])
+        # Expand "*" in the column names, and support not supplying them:
+        if expr_names == ['*'] or expr_names == []:
+            expr_names = [c.name for c in input.get_columns()]
+
+        remaining = list(args[j:])
+
+        # Promote instances of "count" to "count(*)" provided "count" isn't a
+        # column name (it's a pain to have to escape this):
+        for i in range(len(expr_names)):
+            if expr_names[i].lower() == 'count':
+                if 'count' not in input.get_columns():
+                    expr_names[i] = 'count(*)'
+        for i in range(len(remaining)):
+            if remaining[i].lower() == 'count':
+                if 'count' not in input.get_columns():
+                    remaining[i] = 'count(*)'
+
+
+        q = Query(distinct, expr_names, input, remaining)
         return q
 
+
 import unittest
+dummy = FromMemory([IntColumn('size'), 
+                    StringColumn('type')],
+                   [dict(size=1, type='cat'),
+                    dict(size=2, type='cat'),
+                    dict(size=3, type='cat'),
+                    dict(size=4, type='dog'),
+                    dict(size=8, type='dog')])
 class ParserTests(unittest.TestCase):
     def parse(self, *args):
         p = QueryParser()
@@ -310,16 +333,9 @@ class ParserTests(unittest.TestCase):
         # Ensure that "show *" is handled
         q = self.parse('*', 'from', 'rpm')
         self.assertEquals(q.distinct, False)
-        self.assertEquals(q.col_names, ['name', 'epoch', 'version', 'release', 'arch', 'vendor'])
+        self.assertEquals(q.expr_names, ['name', 'epoch', 'version', 'release', 'arch', 'vendor'])
 
     def test_aggregates(self):
-        dummy = FromMemory([IntColumn('size'), 
-                            StringColumn('type')],
-                           [dict(size=1, type='cat'),
-                            dict(size=2, type='cat'),
-                            dict(size=3, type='cat'),
-                            dict(size=4, type='dog'),
-                            dict(size=8, type='dog')])
         q = self.parse('type', 'count(*)', 'max(size)', 'min(size)',
                        'total(size)', 'avg(size)', 'from', dummy, 
                        'group', 'by', 'type',
@@ -328,6 +344,16 @@ class ParserTests(unittest.TestCase):
         self.assertEquals(len(result), 2)
         self.assertEquals(result[0], ('dog', 2, 8, 4, 12.0, 6.0))
         self.assertEquals(result[1], ('cat', 3, 3, 1,  6.0, 2.0))
+
+    def test_count_promotion(self):
+        q = self.parse('count', 'type', 'from', dummy, 
+                       'group', 'by', 'type',
+                       'order', 'by', 'count', 'desc')
+        result = list(q.execute())
+        self.assertEquals(len(result), 2)
+        self.assertEquals(result[0], (3, 'cat'))
+        self.assertEquals(result[1], (2, 'dog'))
+        
         
 
 if __name__=='__main__':

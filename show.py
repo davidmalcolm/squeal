@@ -105,7 +105,7 @@ def as_html(query, out):
 def as_text(query, out):
     iter = query.execute()
     for row in iter:
-        for i, col_name in enumerate(query.col_names):
+        for i, col_name in enumerate(query.expr_names):
             out.write('"%s" ' % row[i]) # FIXME: should we do any escaping?
         out.write('\n')
 
