@@ -55,6 +55,11 @@ def get_input_from_file(filename):
     return AugeasFile(filename)
 
 def get_input(string):
+    # Support passing dictsources directly, to make it easier to test the parser:
+    from show.query import DictSource
+    if isinstance(string, DictSource):
+        return string
+
     if string == 'proc':
         from show.proc import Proc        
         return Proc()

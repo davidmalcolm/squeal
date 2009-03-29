@@ -127,10 +127,9 @@ def run_query(args):
                       metavar="FORMAT")
     (options, args) = parser.parse_args()
     
-    #print options
-    #print args
-    from show.query import Query
-    q = Query.from_args(args)
+    from show.query import QueryParser
+    p = QueryParser()
+    q = p.parse_args(options, args)
 
     if options.format:
         try:

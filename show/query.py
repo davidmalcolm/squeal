@@ -184,74 +184,6 @@ class Query(object):
         self.input = input
         self.stuff = stuff
 
-    @classmethod
-    def from_args(cls, args):
-        from show.inputs import get_input
-        
-        col_names = []
-        inputs = []
-        distinct = False
-        from_idx = None
-        # simplistic, buggy parser:
-
-        # split whitespace in args (really?  what about quoting?)
-        #args = reduce(sum, [arg.split() for arg in args])
-	print args
-        if len(args)>0:
-            for i in range(len(args)):
-                arg = args[i]
-                if arg.lower() == 'distinct':
-                    distinct = True
-                    continue
-
-                if arg.lower() == 'from':
-                    from_idx = i
-                    break
-            
-                if arg[-1] == ',':
-                    arg = arg[:-1]
-                col_names.append(arg)
-
-            if from_idx is None:
-                # Special-case:  "from" was omitted; treat all args as inputs:
-                col_names = []
-                inputs_idx = 0
-            else:
-                inputs_idx = i+1
-
-            # OK, either got a "from" or have no args
-            # Try to extract inputs:		
-            j = inputs_idx
-            while j<len(args):
-                # look for input sources:
-                arg = args[j]
-                print arg
-
-                input = get_input(arg)
-                if input:
-                    inputs.append(input)
-                    j += 1
-                else:
-                    # not recognized as an input
-                    # hopefully the rest of the arguments (if any) are SQL clauses
-                    break
-
-        if inputs == []:
-            # FIXME: handle this better! e.g. introspect and show the backends?
-            raise "No inputs"
-
-        #print 'inputs:',inputs
-        if len(inputs)>1:
-            input = MergedFileInputs(inputs)
-        else: 
-            input = inputs[0]
-            
-        if col_names == ['*'] or col_names == []:
-            col_names = [c.name for c in input.get_columns()]
-
-        q = Query(distinct, col_names, input, args[j:])
-        return q
-
     def __repr__(self):
         return 'Query(%s, %s, %s)' \
                % (repr(self.col_names), repr(self.input), repr(self.stuff))
@@ -280,3 +212,116 @@ class Query(object):
         for row in iter:
             t.add_row(row)
         return t
+
+class QueryParser(object):
+    def parse_args(self, options, args):
+        from show.inputs import get_input
+        
+        col_names = []
+        inputs = []
+        distinct = False
+        from_idx = None
+        # simplistic, buggy parser:
+
+        # split whitespace in args (really?  what about quoting?)
+        #args = reduce(sum, [arg.split() for arg in args])
+
+        if len(args)>0:
+            for i in range(len(args)):
+                arg = args[i]
+                if arg.lower() == 'distinct':
+                    distinct = True
+                    continue
+
+                if arg.lower() == 'from':
+                    from_idx = i
+                    break
+            
+                if arg[-1] == ',':
+                    arg = arg[:-1]
+                col_names.append(arg)
+
+            if from_idx is None:
+                # Special-case:  "from" was omitted; treat all args as inputs:
+                col_names = []
+                inputs_idx = 0
+            else:
+                inputs_idx = i+1
+
+            # OK, either got a "from" or have no args
+            # Try to extract inputs:		
+            j = inputs_idx
+            while j<len(args):
+                # look for input sources:
+                arg = args[j]
+
+                input = get_input(arg)
+                if input:
+                    inputs.append(input)
+                    j += 1
+                else:
+                    # not recognized as an input
+                    # hopefully the rest of the arguments (if any) are SQL clauses
+                    break
+
+        if inputs == []:
+            # FIXME: handle this better! e.g. introspect and show the backends?
+            raise "No inputs"
+
+        #print 'inputs:',inputs
+        if len(inputs)>1:
+            input = MergedFileInputs(inputs)
+        else: 
+            input = inputs[0]
+            
+        if col_names == ['*'] or col_names == []:
+            col_names = [c.name for c in input.get_columns()]
+
+        q = Query(distinct, col_names, input, args[j:])
+        return q
+
+class DummySource(DictSource):
+    def __init__(self, cols, rows):
+        self.cols = cols
+        self.rows = rows
+
+    def get_columns(self):
+        return self.cols
+
+    def iter_dicts(self):
+        for row in self.rows:
+            yield row
+
+import unittest
+class ParserTests(unittest.TestCase):
+    def parse(self, *args):
+        p = QueryParser()
+        return p.parse_args({}, args)
+
+    def test_star(self):
+        # Ensure that "show *" is handled
+        q = self.parse('*', 'from', 'rpm')
+        self.assertEquals(q.distinct, False)
+        self.assertEquals(q.col_names, ['name', 'epoch', 'version', 'release', 'arch', 'vendor'])
+
+    def test_aggregates(self):
+        dummy = DummySource([IntColumn('', 'size'), 
+                             StringColumn('', 'type')],
+                            [dict(size=1, type='cat'),
+                             dict(size=2, type='cat'),
+                             dict(size=3, type='cat'),
+                             dict(size=4, type='dog'),
+                             dict(size=8, type='dog')])
+        q = self.parse('type', 'count(*)', 'max(size)', 'min(size)',
+                       'total(size)', 'avg(size)', 'from', dummy, 
+                       'group', 'by', 'type',
+                       'order', 'by', 'max(size)', 'desc')
+        result = list(q.execute())
+        self.assertEquals(len(result), 2)
+        self.assertEquals(result[0], ('dog', 2, 8, 4, 12.0, 6.0))
+        self.assertEquals(result[1], ('cat', 3, 3, 1,  6.0, 2.0))
+        
+
+if __name__=='__main__':
+    unittest.main()
+
