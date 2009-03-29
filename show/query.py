@@ -25,6 +25,24 @@ class DictSource(object):
     def iter_dicts(self):
         raise NotImplementedError
 
+class FromMemory(DictSource):
+    """
+    An in-memory source of data.
+
+    Can represent the result of a query, also
+    useful for constructing self-tests.
+    """
+    def __init__(self, cols, rows):
+        self.cols = cols
+        self.rows = rows
+
+    def get_columns(self):
+        return self.cols
+
+    def iter_dicts(self):
+        for row in self.rows:
+            yield row
+
 class FileDictSource(DictSource):
     def __init__(self, filename):
         self.filename = filename
@@ -280,18 +298,6 @@ class QueryParser(object):
         q = Query(distinct, col_names, input, args[j:])
         return q
 
-class DummySource(DictSource):
-    def __init__(self, cols, rows):
-        self.cols = cols
-        self.rows = rows
-
-    def get_columns(self):
-        return self.cols
-
-    def iter_dicts(self):
-        for row in self.rows:
-            yield row
-
 import unittest
 class ParserTests(unittest.TestCase):
     def parse(self, *args):
@@ -305,13 +311,13 @@ class ParserTests(unittest.TestCase):
         self.assertEquals(q.col_names, ['name', 'epoch', 'version', 'release', 'arch', 'vendor'])
 
     def test_aggregates(self):
-        dummy = DummySource([IntColumn('', 'size'), 
-                             StringColumn('', 'type')],
-                            [dict(size=1, type='cat'),
-                             dict(size=2, type='cat'),
-                             dict(size=3, type='cat'),
-                             dict(size=4, type='dog'),
-                             dict(size=8, type='dog')])
+        dummy = FromMemory([IntColumn('', 'size'), 
+                            StringColumn('', 'type')],
+                           [dict(size=1, type='cat'),
+                            dict(size=2, type='cat'),
+                            dict(size=3, type='cat'),
+                            dict(size=4, type='dog'),
+                            dict(size=8, type='dog')])
         q = self.parse('type', 'count(*)', 'max(size)', 'min(size)',
                        'total(size)', 'avg(size)', 'from', dummy, 
                        'group', 'by', 'type',
