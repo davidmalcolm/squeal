@@ -29,17 +29,19 @@ class UnknownFile(Exception):
         return 'UnknownFile(%s)' % repr(self.filename)
 
 def get_input_from_file(filename):
+    abspath = os.path.abspath(filename)
+
     # Special-case certain absolute paths:
-    if re.match('^/var/log/httpd/(ssl_)?access_log.*$', filename):
+    if re.match('^/var/log/httpd/(ssl_)?access_log.*$', abspath):
         from show.httpdlog import HttpdLog
         return HttpdLog(filename)
-    if re.match('^/var/log/yum.log.*$', filename):
+    if re.match('^/var/log/yum.log.*$', abspath):
         from show.yumlog import YumLog
         return YumLog(filename)
-    if re.match('^/var/log/messages.*$', filename):
+    if re.match('^/var/log/messages.*$', abspath):
         from show.syslog import SysLog
         return SysLog(filename)
-    if re.match('^/var/log/secure.*$', filename):
+    if re.match('^/var/log/secure.*$', abspath):
         from show.syslog import SysLog
         return SysLog(filename)
 
@@ -51,8 +53,12 @@ def get_input_from_file(filename):
         return TcpDump(filename)
 
     # Try to use Augeas:
-    from show.augeasfile import AugeasFile
-    return AugeasFile(filename)
+    if abspath.startswith('/etc/'):
+        from show.augeasfile import AugeasFile
+        return AugeasFile(filename)
+
+    # Unknown:
+    return None
 
 def get_input(string):
     # Support passing dictsources directly, to make it easier to test the parser:
