@@ -24,19 +24,19 @@ class HttpdLog(RegexFileDictSource):
         # for now, hardcode as if:
         # LogFormat "%h %l %u %t \"%r\" %>s %b \"%{Referer}i\" \"%{User-Agent}i\"" combined
         p = Parser()
-        p.add_column(StringColumn('([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+)', 'host')) # %h
+        p.add_column(StringColumn('host'), '([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+)') # %h
         p.regexp += ' '
-        p.add_column(StringColumn('(-)', 'remote_logname')) # %l
+        p.add_column(StringColumn('remote_logname'), '(-)') # %l
         p.regexp += ' '
-        p.add_column(StringColumn('(-)', 'user')) # %u
+        p.add_column(StringColumn('user'), '(-)') # %u
         p.regexp += ' '
-        p.add_column(StringColumn('\[(.+)\]', 'timestamp')) # %t 
+        p.add_column(StringColumn('timestamp'), '\[(.+)\]') # %t 
         p.regexp += ' '
-        p.add_column(StringColumn('\"(.*)\"', 'request')) # \"%r\" request
+        p.add_column(StringColumn('request'), '\"(.*)\"') # \"%r\" request
         p.regexp += ' '
-        p.add_column(ApacheIntColumn('([0-9]+)', 'status')) # %>s
+        p.add_column(ApacheIntColumn('status'), '([0-9]+)') # %>s
         p.regexp += ' '
-        p.add_column(ApacheIntColumn('([0-9]+|\-)', 'size')) # %b
+        p.add_column(ApacheIntColumn('size'), '([0-9]+|\-)') # %b
         p.regexp += '(.*)'
         return p 
         # \"%{Referer}i\"

@@ -92,7 +92,7 @@ class MergedFileInputs(DictSource):
         self.inputs = inputs
 
     def get_columns(self):
-        return self.inputs[0].get_columns() + [StringColumn('', 'filename')]
+        return self.inputs[0].get_columns() + [StringColumn('filename')]
 
     def iter_dicts(self):
         for i in self.inputs:
@@ -101,8 +101,7 @@ class MergedFileInputs(DictSource):
                 yield tuple
         
 class Column(object):
-    def __init__(self, regexp, name):
-        self.regexp = regexp
+    def __init__(self, name):
         self.name = name
 
     def to_python(self, str):
@@ -136,8 +135,8 @@ class Parser:
         self.regexp = ''
         self.columns = []
 
-    def add_column(self, column):
-        self.regexp += column.regexp
+    def add_column(self, column, regexp):
+        self.regexp += regexp
         self.columns.append(column)
 
 
@@ -311,8 +310,8 @@ class ParserTests(unittest.TestCase):
         self.assertEquals(q.col_names, ['name', 'epoch', 'version', 'release', 'arch', 'vendor'])
 
     def test_aggregates(self):
-        dummy = FromMemory([IntColumn('', 'size'), 
-                            StringColumn('', 'type')],
+        dummy = FromMemory([IntColumn('size'), 
+                            StringColumn('type')],
                            [dict(size=1, type='cat'),
                             dict(size=2, type='cat'),
                             dict(size=3, type='cat'),

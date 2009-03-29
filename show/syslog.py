@@ -20,11 +20,11 @@ from query import *
 
 class SysLog(FileDictSource):
     def get_columns(self):
-        return [StringColumn('', 'time'), 
-                StringColumn('', 'hostname'),
-                StringColumn('', 'source'),
-                StringColumn('', 'pid'),
-                StringColumn('', 'message')]
+        return [StringColumn('time'), 
+                StringColumn('hostname'),
+                StringColumn('source'),
+                StringColumn('pid'),
+                StringColumn('message')]
 
     def parse_as_dict(self, line):
         p = Parser()

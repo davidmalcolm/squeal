@@ -19,12 +19,12 @@ from query import *
 
 class RpmDb(DictSource):
     def get_columns(self):
-        return [StringColumn('', 'name'),
-                StringColumn('', 'epoch'),
-                StringColumn('', 'version'),
-                StringColumn('', 'release'),
-                StringColumn('', 'arch'),
-                StringColumn('', 'vendor')]
+        return [StringColumn('name'),
+                StringColumn('epoch'),
+                StringColumn('version'),
+                StringColumn('release'),
+                StringColumn('arch'),
+                StringColumn('vendor')]
 
     def get_field(self, h, tag):
         # rpm sometimes gives empty lists rather than None for "vendor":

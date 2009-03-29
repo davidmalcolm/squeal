@@ -19,9 +19,9 @@ from query import *
 import os
 class Proc(DictSource):
     def get_columns(self):
-        return [IntColumn('', 'pid'), 
-                StringColumn('', 'exe'),
-                StringColumn('', 'cmdline')]
+        return [IntColumn('pid'), 
+                StringColumn('exe'),
+                StringColumn('cmdline')]
 
     def get_filename(self, pid, name):
         return '/proc/%i/%s' % (pid, name)

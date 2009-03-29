@@ -30,17 +30,17 @@ class TcpDump(DictSource):
         self.filename = filename
 
     def get_columns(self):
-        return [StringColumn('', 'timestamp'), # FIXME; should eventually be time
-                StringColumn('', 'src_mac'),
-                StringColumn('', 'src_oui'),
-                StringColumn('', 'dst_mac'),
-                StringColumn('', 'dst_oui'),
-                StringColumn('', 'ethertype'),
-                StringColumn('', 'ethertype_hex'),
-                StringColumn('', 'length'), # FIXME: should eventually be an int
-                StringColumn('', 'src_host'),
-                StringColumn('', 'dst_host'),
-                StringColumn('', 'details'),
+        return [StringColumn('timestamp'), # FIXME; should eventually be time
+                StringColumn('src_mac'),
+                StringColumn('src_oui'),
+                StringColumn('dst_mac'),
+                StringColumn('dst_oui'),
+                StringColumn('ethertype'),
+                StringColumn('ethertype_hex'),
+                StringColumn('length'), # FIXME: should eventually be an int
+                StringColumn('src_host'),
+                StringColumn('dst_host'),
+                StringColumn('details'),
                 ]                
 
     def iter_dicts(self):

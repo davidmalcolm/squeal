@@ -19,13 +19,13 @@ from query import *
 
 class YumLog(FileDictSource):
     def get_columns(self):
-        return [StringColumn('', 'time'), 
-                StringColumn('', 'event'),
-                StringColumn('', 'name'),
-                StringColumn('', 'arch'),
-                StringColumn('', 'epoch'),
-                StringColumn('', 'version'),
-                StringColumn('', 'release')]
+        return [StringColumn('time'), 
+                StringColumn('event'),
+                StringColumn('name'),
+                StringColumn('arch'),
+                StringColumn('epoch'),
+                StringColumn('version'),
+                StringColumn('release')]
                 
 
     def parse_as_dict(self, line):

@@ -84,7 +84,7 @@ class AugeasFile(FileDictSource):
         
 
     def get_columns(self):
-        return [StringColumn('', name) for name in self.col_names]
+        return [StringColumn(name) for name in self.col_names]
 
     def iter_dicts(self):
         for row in self.rows:
