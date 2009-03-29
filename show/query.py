@@ -129,7 +129,10 @@ class ApacheIntColumn(IntColumn):
 
     
 
-class Parser:
+class LineParser:
+    """
+    Utility class for programatically building line-by-line parsers
+    """
     # a regexp, plus a list of columns, each of which handles a group
     def __init__(self):
         self.regexp = ''

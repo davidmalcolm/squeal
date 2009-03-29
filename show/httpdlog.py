@@ -23,7 +23,7 @@ class HttpdLog(RegexFileDictSource):
         # in theory, read apache conf and figure out log format.
         # for now, hardcode as if:
         # LogFormat "%h %l %u %t \"%r\" %>s %b \"%{Referer}i\" \"%{User-Agent}i\"" combined
-        p = Parser()
+        p = LineParser()
         p.add_column(StringColumn('host'), '([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+)') # %h
         p.regexp += ' '
         p.add_column(StringColumn('remote_logname'), '(-)') # %l

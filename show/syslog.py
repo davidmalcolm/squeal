@@ -27,7 +27,6 @@ class SysLog(FileDictSource):
                 StringColumn('message')]
 
     def parse_as_dict(self, line):
-        p = Parser()
         timestamp_re = '(\S\S\S [0-9][0-9] [0-9][0-9]:[0-9][0-9]:[0-9][0-9])'
         # Try to match with a PID:
         m = re.match(timestamp_re + ' (\S+) (\S+)\[([0-9]+)\]: (.+)', line)
