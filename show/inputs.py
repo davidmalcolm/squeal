@@ -44,6 +44,9 @@ def get_input_from_file(filename):
     if re.match('^/var/log/secure.*$', abspath):
         from show.syslog import SysLog
         return SysLog(filename)
+    if re.match('^/var/log/maillog.*$', abspath):
+        from show.maillog import MailLog
+        return MailLog(filename)
 
     # Try to use "file" to get libmagic to detect the file type
     from subprocess import Popen, PIPE
