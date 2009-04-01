@@ -165,7 +165,7 @@ class Database(object):
         self.conn.commit()
         c.close()
 
-    def insert_row(self, arg_dict):
+    def insert_row(self, cursor, arg_dict):
         #print arg_dict
         values = []
         for col in self.columns:
@@ -175,16 +175,13 @@ class Database(object):
                 val = None
             values.append(val)
 
-        c = self.conn.cursor()
         sql = 'INSERT INTO lines VALUES ('
         sql += ','.join(['?' for v in values])
         sql += ')'
-        c.execute(sql, values)
-        self.conn.commit()
-        c.close()
+        cursor.execute(sql, values)
 
     def query(self, distinct, cols, stuff):
-        c = self.conn.cursor()
+        cursor = self.conn.cursor()
         sql = 'SELECT '
         if distinct:
             sql += 'DISTINCT '
@@ -192,10 +189,10 @@ class Database(object):
         sql += ' FROM lines '
         sql += ' '.join(stuff) # FIXME: ditto; sqlalchemy?
         # print sql
-        c.execute(sql)
-        for row in c:
+        cursor.execute(sql)
+        for row in cursor:
             yield row
-        c.close()
+        cursor.close()
 
 class Query(object):
     def __init__(self, distinct, expr_names, input, stuff):
@@ -217,8 +214,11 @@ class Query(object):
 
         db = self.create_db(columns)
 
+        cursor = db.conn.cursor()
         for d in self.input.iter_dicts():
-            db.insert_row(d)
+            db.insert_row(cursor, d)
+        db.conn.commit()
+        cursor.close()
 
         return db.query(self.distinct, self.expr_names, self.stuff)
 
