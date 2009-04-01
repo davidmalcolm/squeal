@@ -27,7 +27,7 @@ class SysLog(FileDictSource):
                 StringColumn('message')]
 
     def parse_as_dict(self, line):
-        timestamp_re = '(\S\S\S [0-9][0-9] [0-9][0-9]:[0-9][0-9]:[0-9][0-9])'
+        timestamp_re = '(\S\S\S [ 0-9][0-9] [0-9][0-9]:[0-9][0-9]:[0-9][0-9])'
         # Try to match with a PID:
         m = re.match(timestamp_re + ' (\S+) (\S+)\[([0-9]+)\]: (.+)', line)
         if m:
@@ -50,7 +50,7 @@ class SysLog(FileDictSource):
 
 import unittest
 class Tests(unittest.TestCase):
-    def test_parser(self):
+    def test_parser_without_pid(self):
         p = SysLog('')
         d = p.parse_as_dict("Mar 23 19:54:16 brick kernel: virbr0: starting userspace STP failed, starting kernel STP")
         self.assertEquals(d['time'], 'Mar 23 19:54:16')
@@ -59,6 +59,8 @@ class Tests(unittest.TestCase):
         self.assertEquals(d['pid'], None)
         self.assertEquals(d['message'], 'virbr0: starting userspace STP failed, starting kernel STP')
 
+    def test_parser_with_pid(self):
+        p = SysLog('')
         d = p.parse_as_dict("Mar 23 19:54:16 brick avahi-daemon[2599]: Joining mDNS multicast group on interface virbr0.IPv4 with address 192.168.122.1.")
         self.assertEquals(d['time'], 'Mar 23 19:54:16')
         self.assertEquals(d['hostname'], 'brick')
@@ -66,6 +68,14 @@ class Tests(unittest.TestCase):
         self.assertEquals(d['pid'], 2599)
         self.assertEquals(d['message'], 'Joining mDNS multicast group on interface virbr0.IPv4 with address 192.168.122.1.')
 
+    def test_parser_single_digit_date(self):
+        p = SysLog('')
+        d = p.parse_as_dict("Mar  3 12:39:24 brick avahi-daemon[3322]: Invalid legacy unicast query packet.")
+        self.assertEquals(d['time'], 'Mar  3 12:39:24')
+        self.assertEquals(d['hostname'], 'brick')
+        self.assertEquals(d['source'], 'avahi-daemon')
+        self.assertEquals(d['pid'], 3322)
+        self.assertEquals(d['message'], 'Invalid legacy unicast query packet.')
 
 if __name__=='__main__':
     unittest.main()
