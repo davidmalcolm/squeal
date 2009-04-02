@@ -55,6 +55,11 @@ def get_input_from_file(filename):
         from show.tcpdump import TcpDump
         return TcpDump(filename)
 
+    from show.archive import get_input_from_file
+    archive = get_input_from_file(filename)
+    if archive:
+        return archive
+
     # Try to use Augeas:
     if abspath.startswith('/etc/'):
         from show.augeasfile import AugeasFile
