@@ -19,6 +19,7 @@
 
 from query import *
 
+import os
 import zipfile
 import tarfile
 
@@ -85,12 +86,69 @@ class TarFileSrc(DictSource):
                        gname=ti.gname,
                        )
 
+class RpmFile(DictSource):
+    """
+    Backend for reading rpm files
+    """
+    def __init__(self, filename):
+        self.filename = filename
+
+    def get_columns(self):
+        return [StringColumn('name'),
+                IntColumn('size'),
+                IntColumn('mode'),
+                IntColumn('mtime'),
+                IntColumn('flags'),
+                IntColumn('rdev'),
+                IntColumn('inode'),
+                IntColumn('nlink'),
+                IntColumn('state'),
+                IntColumn('vflags'),
+                StringColumn('user'),
+                StringColumn('group_'),
+                StringColumn('digest'),
+                ]
+    
+    def get_header(self):
+        import rpm
+        fd = os.open(self.filename, os.O_RDONLY)
+        try:
+            ts = rpm.TransactionSet()
+            ts.setVSFlags(-1) # disable all verifications
+            h = ts.hdrFromFdno(fd)
+        finally:
+            os.close(fd)
+        return h
+        
+    def iter_dicts(self):
+        h = self.get_header()
+        fi = h.fiFromHeader() 
+        for f in fi:
+            # these are tuples, e.g.:
+            #('/usr/lib/python2.5/site-packages/show/yumlog.pyc', 3631L, 33188, 1238371283, 0, 0, 170245, 2, 0, -1, 'root', 'root', '6b4bab026d94f5fe1ce0f3a4a8367bb2')
+            # See implementation of rpmfi_iternext at http://rpm.org/gitweb?p=rpm.git;a=blob;f=python/rpmfi-py.c;h=59c2e4c474f99fd1b4b111829ed518ee6bd69580;hb=HEAD
+            yield dict(name=f[0],
+                       size=f[1],
+                       mode=f[2],
+                       mtime=f[3],
+                       flags=f[4],
+                       rdev=f[5],
+                       inode=f[6],
+                       nlink=f[7],
+                       state=f[8],
+                       vflags=f[9],
+                       user=f[10],
+                       group_=f[11],
+                       digest=f[12])
+
 
 def get_input_from_file(filename):
     if zipfile.is_zipfile(filename):
         return ZipFileSrc(filename)
     elif tarfile.is_tarfile(filename):
         return TarFileSrc(filename)
+    elif filename.endswith('.rpm'):
+        return RpmFile(filename)
     else:
         return None
         
