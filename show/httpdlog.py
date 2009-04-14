@@ -26,9 +26,9 @@ class HttpdLog(RegexFileDictSource):
         p = LineParser()
         p.add_column(StringColumn('host'), '([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+)') # %h
         p.regexp += ' '
-        p.add_column(StringColumn('remote_logname'), '(-)') # %l
+        p.add_column(StringColumn('remote_logname'), '(.*)') # %l
         p.regexp += ' '
-        p.add_column(StringColumn('user'), '(-)') # %u
+        p.add_column(StringColumn('user'), '(.*)') # %u
         p.regexp += ' '
         p.add_column(StringColumn('timestamp'), '\[(.+)\]') # %t 
         p.regexp += ' '
@@ -54,6 +54,13 @@ class Tests(unittest.TestCase):
         self.assertEquals(d['request'], 'GET /foo.css HTTP/1.1')
         self.assertEquals(d['status'], 200)
         self.assertEquals(d['size'], 2261)
+
+    def test_line_with_user(self):
+        p = HttpdLog('')
+        d = p.parse_as_dict('127.0.0.1 - jdoe@EXAMPLE.COM [15/Apr/2009:04:26:15 +0800] "GET /favicon.ico HTTP/1.1" 404 1346')
+        self.assertEquals(d['user'], 'jdoe@EXAMPLE.COM')
+        self.assertEquals(d['status'], 404)
+
 
 
 if __name__=='__main__':
