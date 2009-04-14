@@ -234,6 +234,39 @@ class Query(object):
         return t
 
 class QueryParser(object):
+    def _split_args(self, options, args):
+        '''
+        Tokenize within the individual args, so that the user can pass in
+        mixed queries like:
+           $ show "count(*), total(size) host from" /var/log/httpd/*error_log* \
+           "order by total(size) desc"
+        where some of the arguments are split by the shell, and some by this
+        parser.
+        '''
+        result = []
+        for arg in args:
+            # Support passing dictsources directly, to make it easier to
+            # test the parser:
+            if isinstance(arg, DictSource):
+                result.append(arg)
+            else:
+                result += self._tokenize_str(arg)
+        return result
+
+    def _tokenize_str(self, string):
+        result = []
+        token = ''
+        for ch in string:
+            if ch.isspace() or ch==',':
+                if token != '':
+                    result.append(token)
+                    token = ''
+            else:
+                token += ch
+        if token != '':
+            result.append(token)
+        return result
+
     def parse_args(self, options, args):
         from show.inputs import get_input
         
@@ -243,8 +276,7 @@ class QueryParser(object):
         from_idx = None
         # simplistic, buggy parser:
 
-        # split whitespace in args (really?  what about quoting?)
-        #args = reduce(sum, [arg.split() for arg in args])
+        args = self._split_args(options, args)
 
         if len(args)>0:
             for i in range(len(args)):
@@ -337,9 +369,20 @@ class ParserTests(unittest.TestCase):
 
     def test_aggregates(self):
         q = self.parse('type', 'count(*)', 'max(size)', 'min(size)',
-                       'total(size)', 'avg(size)', 'from', dummy, 
+                       'total(size)', 'avg(size)', 'from', dummy,
                        'group', 'by', 'type',
                        'order', 'by', 'max(size)', 'desc')
+        result = list(q.execute())
+        self.assertEquals(len(result), 2)
+        self.assertEquals(result[0], ('dog', 2, 8, 4, 12.0, 6.0))
+        self.assertEquals(result[1], ('cat', 3, 3, 1,  6.0, 2.0))
+
+    def test_aggregates_as_combined_arg(self):
+        q = self.parse("""type,count(*),max(size),min(size),
+                       total(size) avg(size) from""",
+                       dummy,
+                       """group by type
+                       order by max(size) desc""")
         result = list(q.execute())
         self.assertEquals(len(result), 2)
         self.assertEquals(result[0], ('dog', 2, 8, 4, 12.0, 6.0))
@@ -353,7 +396,38 @@ class ParserTests(unittest.TestCase):
         self.assertEquals(len(result), 2)
         self.assertEquals(result[0], (3, 'cat'))
         self.assertEquals(result[1], (2, 'dog'))
+
+    def test_commas_without_spaces(self):
+        q = self.parse('size,type', 'from', dummy)
+        self.assertEquals(q.distinct, False)
+        self.assertEquals(q.expr_names, ['size', 'type'])
+
+    def test_splitting_string(self):
+        q = self.parse('size, type from', dummy,
+                       'order by length(size) desc limit 3')
+        self.assertEquals(q.distinct, False)
+        self.assertEquals(q.expr_names, ['size', 'type'])
+        result = list(q.execute())
+        self.assertEquals(len(result), 3)
         
+    def test_where_clause(self):
+        q = self.parse('distinct size from', dummy,
+                       'where type="dog"')
+        self.assertEquals(q.distinct, True)
+        self.assertEquals(q.expr_names, ['size'])
+        result = list(q.execute())
+        self.assertEquals(len(result), 2)
+        self.assertEquals(result[0], (4, ))
+        self.assertEquals(result[1], (8, ))
+
+    def test_string_literals_with_spaces(self):
+        q = self.parse('distinct size from', dummy,
+                       'where type!="dog food"')
+        self.assertEquals(q.distinct, True)
+        self.assertEquals(q.expr_names, ['size'])
+        result = list(q.execute())
+        self.assertEquals(len(result), 5)
+
         
 
 if __name__=='__main__':
