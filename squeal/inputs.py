@@ -33,36 +33,36 @@ def get_input_from_file(filename):
 
     # Special-case certain absolute paths:
     if re.match('^/var/log/httpd/(ssl_)?access_log.*$', abspath):
-        from show.httpdlog import HttpdLog
+        from squeal.httpdlog import HttpdLog
         return HttpdLog(filename)
     if re.match('^/var/log/yum.log.*$', abspath):
-        from show.yumlog import YumLog
+        from squeal.yumlog import YumLog
         return YumLog(filename)
     if re.match('^/var/log/messages.*$', abspath):
-        from show.syslog import SysLog
+        from squeal.syslog import SysLog
         return SysLog(filename)
     if re.match('^/var/log/secure.*$', abspath):
-        from show.syslog import SysLog
+        from squeal.syslog import SysLog
         return SysLog(filename)
     if re.match('^/var/log/maillog.*$', abspath):
-        from show.maillog import MailLog
+        from squeal.maillog import MailLog
         return MailLog(filename)
 
     # Try to use "file" to get libmagic to detect the file type
     from subprocess import Popen, PIPE
     magic_type = Popen(["file", '-b', filename], stdout=PIPE).communicate()[0]
     if re.match('^tcpdump capture file.*', magic_type):
-        from show.tcpdump import TcpDump
+        from squeal.tcpdump import TcpDump
         return TcpDump(filename)
 
-    from show.archive import get_input_from_file
+    from squeal.archive import get_input_from_file
     archive = get_input_from_file(filename)
     if archive:
         return archive
 
     # Try to use Augeas:
     if abspath.startswith('/etc/'):
-        from show.augeasfile import AugeasFile
+        from squeal.augeasfile import AugeasFile
         return AugeasFile(filename)
 
     # Unknown:
@@ -70,15 +70,15 @@ def get_input_from_file(filename):
 
 def get_input(string):
     # Support passing dictsources directly, to make it easier to test the parser:
-    from show.query import DictSource
+    from squeal.query import DictSource
     if isinstance(string, DictSource):
         return string
 
     if string == 'proc':
-        from show.proc import Proc        
+        from squeal.proc import Proc        
         return Proc()
     if string == 'rpm':
-        from show.rpmdb import RpmDb
+        from squeal.rpmdb import RpmDb
         return RpmDb()
 
     if os.path.isfile(string):

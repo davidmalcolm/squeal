@@ -24,7 +24,7 @@ class TcpDump(DictSource):
     Very simplistic at this stage; proof-of-concept
 
     e.g.
-    $ show "count(*)", "total(length)", src_mac, dst_mac from test.pcap group by src_mac, dst_mac
+    $ squeal "count(*)", "total(length)", src_mac, dst_mac from test.pcap group by src_mac, dst_mac
     '''
     def __init__(self, filename):
         self.filename = filename

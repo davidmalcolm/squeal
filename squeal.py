@@ -127,7 +127,7 @@ def run_query(args):
                       metavar="FORMAT")
     (options, args) = parser.parse_args()
     
-    from show.query import QueryParser
+    from squeal.query import QueryParser
     p = QueryParser()
     q = p.parse_args(options, args)
 
@@ -141,7 +141,7 @@ def run_query(args):
     else:
         if sys.stdout.isatty():
             # We're connected to a TTY, go into text UI mode:
-            from show.tui import Tui
+            from squeal.tui import Tui
             ui = Tui(q, options)
             ui.main()
         else:

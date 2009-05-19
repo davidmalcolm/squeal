@@ -224,9 +224,9 @@ class Query(object):
 
     def make_table(self):
         """
-        Execute the table, creating a show.table.Table holding the results
+        Execute the table, creating a squeal.table.Table holding the results
         """
-        from show.table import Table
+        from squeal.table import Table
         iter = self.execute()
         t = Table(columnHeadings=self.expr_names)
         for row in iter:
@@ -238,7 +238,7 @@ class QueryParser(object):
         '''
         Tokenize within the individual args, so that the user can pass in
         mixed queries like:
-           $ show "count(*), total(size) host from" /var/log/httpd/*error_log* \
+           $ squeal "count(*), total(size) host from" /var/log/httpd/*error_log* \
            "order by total(size) desc"
         where some of the arguments are split by the shell, and some by this
         parser.
@@ -268,7 +268,7 @@ class QueryParser(object):
         return result
 
     def parse_args(self, options, args):
-        from show.inputs import get_input
+        from squeal.inputs import get_input
         
         expr_names = []
         inputs = []
@@ -362,7 +362,7 @@ class ParserTests(unittest.TestCase):
         return p.parse_args({}, args)
 
     def test_star(self):
-        # Ensure that "show *" is handled
+        # Ensure that "squeal *" is handled
         q = self.parse('*', 'from', 'rpm')
         self.assertEquals(q.distinct, False)
         self.assertEquals(q.expr_names, ['name', 'epoch', 'version', 'release', 'arch', 'vendor'])

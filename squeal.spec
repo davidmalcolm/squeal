@@ -1,14 +1,14 @@
 %{!?python_sitelib: %define python_sitelib %(%{__python} -c "from distutils.sysconfig import get_python_lib; print get_python_lib()")}
 
-Name:           show
-Version:        0.3
+Name:           squeal
+Version:        0.4
 Release:        1%{?dist}
-Summary:        "show" is a SQL-like interface for the command line
+Summary:        "squeal" is a SQL-like interface for the command line
 
 Group:          Development/Languages
 License:        LGPLv2.1
 URL:            https://fedorahosted.org/show
-Source0:        show-0.3.tar.gz
+Source0:        squeal-0.3.tar.gz
 BuildRoot:      %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
 BuildArch:      noarch
@@ -17,7 +17,7 @@ BuildRequires:  python-devel
 Requires:       python-augeas
 
 %description
-show is a SQL-like interface for the command line.
+squeal is a SQL-like interface for the command line.
 
 %prep
 %setup -q
@@ -30,7 +30,7 @@ show is a SQL-like interface for the command line.
 %install
 rm -rf $RPM_BUILD_ROOT
 %{__python} setup.py install -O1 --skip-build --root $RPM_BUILD_ROOT
-mv $RPM_BUILD_ROOT/%{_bindir}/show.py $RPM_BUILD_ROOT/%{_bindir}/show
+mv $RPM_BUILD_ROOT/%{_bindir}/squeal.py $RPM_BUILD_ROOT/%{_bindir}/squeal
 
 %clean
 rm -rf $RPM_BUILD_ROOT
@@ -40,10 +40,13 @@ rm -rf $RPM_BUILD_ROOT
 %defattr(-,root,root,-)
 %doc README
 %{python_sitelib}/*
-%{_bindir}/show
+%{_bindir}/squeal
 
 
 %changelog
+* Tue May 19 2009 David Malcolm <dmalcolm@redhat.com> - 0.4-1
+- rename show -> squeal
+
 * Tue Mar 24 2009 David Malcolm <dmalcolm@redhat.com> - 0.3-1
 - 0.3: add horizontal scrolling, syslog handling, and config file handling, using augeas
 - specfile cleanup (thanks rathann)

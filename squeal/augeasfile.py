@@ -18,11 +18,11 @@ from query import *
 import os
 
 # examples:
-#   show /etc/yum.repos.d/*.repo
-#   show /etc/xinetd.d/*
-#   show /etc/aliases
-#   show /etc/inittab
-#   show /etc/passwd where shell !=\'/sbin/nologin\'
+#   squeal /etc/yum.repos.d/*.repo
+#   squeal /etc/xinetd.d/*
+#   squeal /etc/aliases
+#   squeal /etc/inittab
+#   squeal /etc/passwd where shell !=\'/sbin/nologin\'
 
 class AugeasFile(FileDictSource):
     """
