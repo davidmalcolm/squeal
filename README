@@ -1,15 +1,15 @@
-# Who's been looking at this web site?
-$ show "count(*)", ip_addr from /var/log/httpd/*access_log* group by ip_addr;
-# (querying multiple files at once, aggregating results easily)
+Who's been looking at this web site?
+$ squeal "count(*)", ip_addr from /var/log/httpd/*access_log* group by ip_addr;
+(querying multiple files at once, aggregating results easily)
 
-# How much has each user been downloading?
-$ show host, "count(*)", "total(size)" from /var/log/httpd/*access_log* group by host;
+How much has each user been downloading?
+$ squeal host, "count(*)", "total(size)" from /var/log/httpd/*access_log* group by host;
 
-# What are all the 404s?
-$ show distinct request from /var/log/httpd/*access_log* where status = 404
+What are all the 404s?
+$ squeal distinct request from /var/log/httpd/*access_log* where status = 404
 
-# Look at number/size of requests in the apache logs:
-# python select.py filename, "count(*)", "total(size)" from /var/log/httpd/*access_log* group by filename order by "total(size)" desc
+Look at number/size of requests in the apache logs:
+$ squeal filename, "count(*)", "total(size)" from /var/log/httpd/*access_log* group by filename order by "total(size)" desc
                        filename|count(*)|total(size)|
 -------------------------------+--------+-----------+
 /var/log/httpd/ssl_access_log.4|    1921| 12824849.0|
@@ -23,7 +23,7 @@ $ show distinct request from /var/log/httpd/*access_log* where status = 404
 
 
 Querying yum logs (dealing with changes in format internally):
-[root@brick select]# show from /var/log/yum.log* where 'name like "kernel%"' limit 5
+[root@brick ~]# squeal from /var/log/yum.log* where 'name like "kernel%"' limit 5
            time|    event|           name|  arch|epoch|  version|     release|        filename|
 ---------------+---------+---------------+------+-----+---------+------------+----------------+
 Feb 14 20:00:03|Installed|kernel-firmware|noarch| None|2.6.27.12|170.2.5.fc10|/var/log/yum.log|
@@ -33,7 +33,7 @@ Feb 14 21:05:53|Installed|         kernel|  i686| None|2.6.27.12|170.2.5.fc10|/v
 Feb 14 21:12:41|Installed|     kernel-PAE|  i686| None|2.6.27.12|170.2.5.fc10|/var/log/yum.log|
 
 Querying the host's RPM database, finding packages by name with more than one installed:
-[david@brick ~]$ show name, "count(*)" from rpm group by name having "count(*)>1"
+[david@brick ~]$ squeal name, "count(*)" from rpm group by name having "count(*)>1"
                      name|count(*)|
 -------------------------+--------+
                gpg-pubkey|       4|
@@ -46,7 +46,7 @@ jakarta-commons-validator|       2|
                   openssl|       2|
 
 Looking in RPM database by vendor:
-[david@brick select]$ show vendor, "count(*)" from rpm group by vendor
+[david@brick ~]$ squeal vendor, "count(*)" from rpm group by vendor
             vendor|count(*)|
 ------------------+--------+
               None|      12|
@@ -54,11 +54,11 @@ Looking in RPM database by vendor:
               Koji|       2|
 
 
-# Output as HTML:
-$ show --format=html from rpm > test.html
+Output as HTML:
+$ squeal --format=html from rpm > test.html
 
-# Looking in sys logs:
-$ show "count(*)", source from /var/log/messages* group by source order by "count(*)" desc
+Looking in sys logs:
+$ squeal "count(*)", source from /var/log/messages* group by source order by "count(*)" desc
 
 count(*)|source              |
 --------+--------------------+
@@ -92,10 +92,10 @@ count(*)|source              |
 
 
 Other queries:
-$ show /var/log/secure* where message like \"%authentication failure%\"
+$ squeal /var/log/secure* where message like \"%authentication failure%\"
 
-$ show /etc/yum.repos.d/*.repo where gpgcheck != \'"1"\'
-$ show /etc/xinetd.d/*
-$ show /etc/aliases
-$ show /etc/inittab
-$ show /etc/passwd where shell !=\'/sbin/nologin\'
+$ squeal /etc/yum.repos.d/*.repo where gpgcheck != \'"1"\'
+$ squeal /etc/xinetd.d/*
+$ squeal /etc/aliases
+$ squeal /etc/inittab
+$ squeal /etc/passwd where shell !=\'/sbin/nologin\'
