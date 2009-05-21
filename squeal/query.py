@@ -99,7 +99,50 @@ class MergedFileInputs(DictSource):
             for tuple in i.iter_dicts():
                 tuple['filename'] = i.filename
                 yield tuple
+
+class StreamDictSource(DictSource):
+    def __init__(self, stream, options):
+        self.stream = stream
+        self.cached_line = self.stream.readline()
+        if options.input_regex:
+            self.regex = options.input_regex
+            self.matcher = re.compile(self.regex)
+        else:
+            self.matcher = None
+            self.regex = None
+            self.field_separator = options.field_separator
         
+        self.num_cols = len(self._get_tuple(self.cached_line))
+
+    def get_columns(self):
+        return [StringColumn('col%i' % i) for i in xrange(self.num_cols)]
+
+    def get_lines(self):
+        if self.cached_line:
+            line = self.cached_line
+            self.cached_line = None
+            yield line
+        for line in self.stream.readlines():
+            yield line
+
+    def iter_tuples(self):
+        for line in self.get_lines():
+            yield self._get_tuple(line)
+                
+    def _get_tuple(self, line):
+        if self.matcher:
+            return self.matcher.match(line).groups()
+        else:
+            if self.field_separator:
+                return line.strip().split(self.field_separator)
+            else:
+                return line.split()
+
+    def iter_dicts(self):
+        for tuple in self.iter_tuples():
+            yield dict([('col%i' % i, val) for (i, val) in enumerate(tuple)])
+
+    
 class Column(object):
     def __init__(self, name):
         self.name = name
@@ -189,7 +232,11 @@ class Database(object):
         sql += ' FROM lines '
         sql += ' '.join(stuff) # FIXME: ditto; sqlalchemy?
         # print sql
-        cursor.execute(sql)
+        try:
+            cursor.execute(sql)
+        except:
+            print 'Exception executing: %s' %sql
+            raise
         for row in cursor:
             yield row
         cursor.close()
@@ -307,7 +354,7 @@ class QueryParser(object):
                 # look for input sources:
                 arg = args[j]
 
-                input = get_input(arg)
+                input = get_input(arg, options)
                 if input:
                     inputs.append(input)
                     j += 1

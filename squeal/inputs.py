@@ -28,7 +28,12 @@ class UnknownFile(Exception):
     def __str__(self):
         return 'UnknownFile(%s)' % repr(self.filename)
 
-def get_input_from_file(filename):
+def is_type_textual(magic_type):
+    if magic_type == 'ASCII text':
+        return True
+    return False
+
+def get_input_from_file(filename, options):
     abspath = os.path.abspath(filename)
 
     # Special-case certain absolute paths:
@@ -50,7 +55,7 @@ def get_input_from_file(filename):
 
     # Try to use "file" to get libmagic to detect the file type
     from subprocess import Popen, PIPE
-    magic_type = Popen(["file", '-b', filename], stdout=PIPE).communicate()[0]
+    magic_type = Popen(["file", '-b', filename], stdout=PIPE).communicate()[0].strip()
     if re.match('^tcpdump capture file.*', magic_type):
         from squeal.tcpdump import TcpDump
         return TcpDump(filename)
@@ -65,10 +70,14 @@ def get_input_from_file(filename):
         from squeal.augeasfile import AugeasFile
         return AugeasFile(filename)
 
+    if is_type_textual(magic_type):
+        from squeal.query import StreamDictSource
+        return StreamDictSource(open(filename), options)
+
     # Unknown:
     return None
 
-def get_input(string):
+def get_input(string, options):
     # Support passing dictsources directly, to make it easier to test the parser:
     from squeal.query import DictSource
     if isinstance(string, DictSource):
@@ -82,7 +91,12 @@ def get_input(string):
         return RpmDb()
 
     if os.path.isfile(string):
-        return get_input_from_file(string)
+        return get_input_from_file(string, options)
+
+    if string == '-':
+        from squeal.query import StreamDictSource
+        import sys
+        return StreamDictSource(sys.stdin, options)
 
     return None
     #raise UnknownFile(string)

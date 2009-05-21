@@ -82,7 +82,7 @@ support multiple input files (log rotation); store the filename as an extra colu
 
 Output formats:
   - lines, with a field separator, to play well with shell pipelines
-  - json, yaml, whatever this week's reinvention of XML is
+  - json, yaml, whatever this week\'s reinvention of XML is
   - xml
   - html tables
   - ODF spreadsheet
@@ -125,6 +125,13 @@ def run_query(args):
                       help='select output format: %s ' \
                             % ' '.join(['"%s"' % key for key in formatters.keys()]),
                       metavar="FORMAT")
+    parser.add_option("-F", "--field-separator", dest="field_separator",
+                      help='Use fs for the input field separator',
+                      metavar="fs")
+    parser.add_option("-r", "--input-regex", dest="input_regex",
+                      help='Supply a regular expression (with groups) for carving up text input files',
+                      metavar="REGULAR-EXPRESSION")
+    
     (options, args) = parser.parse_args()
     
     from squeal.query import QueryParser
