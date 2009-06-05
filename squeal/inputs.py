@@ -31,6 +31,8 @@ class UnknownFile(Exception):
 def is_type_textual(magic_type):
     if magic_type == 'ASCII text':
         return True
+    if magic_type == 'ASCII English text':
+        return True
     return False
 
 def get_input_from_file(filename, options):
