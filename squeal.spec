@@ -7,8 +7,8 @@ Summary:        "squeal" is a SQL-like interface for the command line
 
 Group:          Development/Languages
 License:        LGPLv2.1
-URL:            https://fedorahosted.org/show
-Source0:        squeal-0.3.tar.gz
+URL:            https://fedorahosted.org/squeal
+Source0:        https://fedorahosted.org/released/squeal/squeal-0.4.tar.gz
 BuildRoot:      %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
 BuildArch:      noarch
@@ -44,7 +44,8 @@ rm -rf $RPM_BUILD_ROOT
 
 
 %changelog
-* Tue May 19 2009 David Malcolm <dmalcolm@redhat.com> - 0.4-1
+* Thu Jun  4 2009 David Malcolm <dmalcolm@redhat.com> - 0.4-1
+- 0.4
 - rename show -> squeal
 
 * Tue Mar 24 2009 David Malcolm <dmalcolm@redhat.com> - 0.3-1
