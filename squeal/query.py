@@ -127,11 +127,17 @@ class StreamDictSource(DictSource):
 
     def iter_tuples(self):
         for line in self.get_lines():
-            yield self._get_tuple(line)
+            t = self._get_tuple(line)
+            if t:
+                yield t 
                 
     def _get_tuple(self, line):
         if self.matcher:
-            return self.matcher.match(line).groups()
+            m = self.matcher.match(line)
+            if m:
+                return m.groups()
+            else:
+                print "couldn't match:", line
         else:
             if self.field_separator:
                 return line.strip().split(self.field_separator)
