@@ -193,7 +193,8 @@ class LineParser:
 
 
 class Database(object):
-    def __init__(self, columns):
+    def __init__(self, options, columns):
+        self.options = options
         self.columns = columns
 
         try:
@@ -206,10 +207,12 @@ class Database(object):
         self.conn = sqlite.connect(':memory:')
         c = self.conn.cursor()
         # Create table
-        sql = 'CREATE TABLE lines ('
-        sql += ', '.join('%s %s' % (c.name, c.sql_type()) for c in columns)
-        sql += ')'
-        #print sql
+        sql = '  CREATE TABLE lines (\n    '
+        sql += ',\n    '.join('%s %s' % (c.name, c.sql_type()) for c in columns)
+        sql += '\n  )'
+        if self.options.debug_level >= 5:
+            print 'sqlite table creation:'
+            print sql
         c.execute(sql)
         self.conn.commit()
         c.close()
@@ -237,7 +240,8 @@ class Database(object):
         sql += ','.join(cols) # FIXME: need a real parser/sqlgenerator here; sqlalchemy?
         sql += ' FROM lines '
         sql += ' '.join(stuff) # FIXME: ditto; sqlalchemy?
-        # print sql
+        if self.options.debug_level >= 5:
+            print 'sqlite generated query:', sql
         try:
             cursor.execute(sql)
         except:
@@ -248,7 +252,8 @@ class Database(object):
         cursor.close()
 
 class Query(object):
-    def __init__(self, distinct, expr_names, input, stuff):
+    def __init__(self, options, distinct, expr_names, input, stuff):
+        self.options = options
         self.distinct = distinct
         self.expr_names = expr_names
         self.input = input
@@ -259,7 +264,7 @@ class Query(object):
                % (repr(self.expr_names), repr(self.input), repr(self.stuff))
 
     def create_db(self, columns):
-        return Database(columns)
+        return Database(self.options, columns)
     
     def execute(self):
         # Generate an iterator over result
@@ -304,6 +309,9 @@ class QueryParser(object):
                 result.append(arg)
             else:
                 result += self._tokenize_str(arg)
+        if options.debug_level >= 5:
+            print 'split_args(%s) -> %s' \
+                  % (repr(args), repr(result))
         return result
 
     def _tokenize_str(self, string):
@@ -397,7 +405,7 @@ class QueryParser(object):
                     remaining[i] = 'count(*)'
 
 
-        q = Query(distinct, expr_names, input, remaining)
+        q = Query(options, distinct, expr_names, input, remaining)
         return q
 
 
