@@ -121,6 +121,9 @@ def run_query(args):
                   'text':as_text,
                   }
     parser = OptionParser(usage=usage)
+    parser.add_option("-d", "--debug", dest="debug_level",
+                      help='set debug level from 0 (none) to 9 (verbose)',
+                      metavar="DEBUG_LEVEL")
     parser.add_option("-f", "--format", dest="format",
                       help='select output format: %s ' \
                             % ' '.join(['"%s"' % key for key in formatters.keys()]),
@@ -133,11 +136,27 @@ def run_query(args):
                       metavar="REGULAR-EXPRESSION")
     
     (options, args) = parser.parse_args()
+
+    # Handle debug_level:
+    if options.debug_level:
+        try:
+            options.debug_level = int(options.debug_level)
+        except:
+            print 'The debugging level must be an integer from 0-9'
+    if options.debug_level is None:
+        options.debug_level = 0
+
+    # Initial debugging info:
+    if options.debug_level > 0:
+        from pprint import pprint
+        print 'Options: %s' % options
+        print 'Args: %s' % repr(args)
     
     from squeal.query import QueryParser
     p = QueryParser()
     q = p.parse_args(options, args)
-
+    if options.debug_level > 0:
+        print 'Query: %s' % q
     if options.format:
         try:
             formatter = formatters[options.format]
