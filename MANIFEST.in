@@ -1,0 +1,5 @@
+include README
+include COPYING
+include setup.py
+include squeal.py
+include squeal/*.py

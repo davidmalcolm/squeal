@@ -1,23 +1,42 @@
 %{!?python_sitelib: %define python_sitelib %(%{__python} -c "from distutils.sysconfig import get_python_lib; print get_python_lib()")}
 
 Name:           squeal
-Version:        0.4
+Version:        0.4.1
 Release:        1%{?dist}
-Summary:        "squeal" is a SQL-like interface for the command line
+Summary:        Data manipulation tool for the command line
 
 Group:          Development/Languages
-License:        LGPLv2.1
+License:        LGPLv2
 URL:            https://fedorahosted.org/squeal
-Source0:        https://fedorahosted.org/released/squeal/squeal-0.4.tar.gz
+Source0:        https://fedorahosted.org/released/squeal/squeal-0.4.1.tar.gz
 BuildRoot:      %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
 BuildArch:      noarch
 BuildRequires:  python-devel
 
+# Trying to support both Fedora and RHEL:
+%if 0%{?fedora}
+BuildRequires:  python-setuptools-devel
+%else
+BuildRequires:  python-setuptools
+%endif
+
 Requires:       python-augeas
 
 %description
-squeal is a SQL-like interface for the command line.
+"squeal" is a tool for manipulating data from the shell, and in shell
+pipelines.
+
+It is able to carve up various types of input file, treating them as tabular
+data.  It has backends for working with many types of log file, configuration
+files, and archive formats.
+
+It accepts a subset of SQL for manipulating the inputs, such as filtering,
+sorting and aggregating.
+
+Finally, it can output the results in a number of formats, including a
+text-based user interface.
+
 
 %prep
 %setup -q
@@ -38,12 +57,25 @@ rm -rf $RPM_BUILD_ROOT
 
 %files
 %defattr(-,root,root,-)
-%doc README
+%doc README COPYING
 %{python_sitelib}/*
 %{_bindir}/squeal
 
 
 %changelog
+* Mon Jul  6 2009 David Malcolm <dmalcolm@redhat.com> - 0.4.1-1
+- 0.4.1: add MANIFEST.in and COPYING files (LGPLv2.1); fix metadata; add
+debug option
+- make summary and description convey a better idea of what the software
+does
+
+* Thu Jun  4 2009 David Malcolm <dmalcolm@redhat.com> - 0.4-3
+- change license tag to "LGPLv2", the approved shortname for LGPLv2.1, as per
+Fedora packaging guidelines.  The code is licensed under LGPLv2.1.
+
+* Thu Jun  4 2009 David Malcolm <dmalcolm@redhat.com> - 0.4-2
+- add python-setuptools(-devel) to build requirements
+
 * Thu Jun  4 2009 David Malcolm <dmalcolm@redhat.com> - 0.4-1
 - 0.4
 - rename show -> squeal
