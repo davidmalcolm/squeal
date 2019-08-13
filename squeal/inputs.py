@@ -58,7 +58,7 @@ def get_input_from_file(filename, options):
     # Try to use "file" to get libmagic to detect the file type
     from subprocess import Popen, PIPE
     magic_type = Popen(["file", '-b', filename], stdout=PIPE).communicate()[0].strip()
-    if re.match('^tcpdump capture file.*', magic_type):
+    if re.match(b'^tcpdump capture file.*', magic_type):
         from squeal.tcpdump import TcpDump
         return TcpDump(filename)
 

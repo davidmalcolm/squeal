@@ -16,7 +16,8 @@
 # Red Hat Author(s): David Hugh Malcolm <dmalcolm@redhat.com>
 
 import curses
-import table
+
+from squeal import table
 
 class Tui(object):
     def __init__(self, query, options):
@@ -36,9 +37,7 @@ class Tui(object):
         self.scroll_x = 0
 
     def main(self):
-        import curses.wrapper
-        from curses.wrapper import wrapper
-        wrapper(self.wrapped_main)
+        curses.wrapper(self.wrapped_main)
 
     def _repaint_heading(self):
         for col_idx, col_name in enumerate(self.query.expr_names):

@@ -17,7 +17,7 @@
 
 # Backends for reading contents of various archive formats
 
-from query import *
+from .query import *
 
 import os
 import zipfile

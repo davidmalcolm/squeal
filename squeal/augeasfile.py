@@ -14,7 +14,7 @@
 # this software or its documentation.
 # 
 # Red Hat Author(s): David Hugh Malcolm <dmalcolm@redhat.com>
-from query import *
+from squeal.query import *
 import os
 
 # examples:

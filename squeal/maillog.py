@@ -15,7 +15,7 @@
 # 
 # Red Hat Author(s): David Hugh Malcolm <dmalcolm@redhat.com>
 
-from query import *
+from squeal.query import *
 
 
 class MailLog(FileDictSource):

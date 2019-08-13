@@ -103,8 +103,7 @@ class RowGroup:
         
 
     def _calc_col_width(self, colIndex):
-        return max (map(lambda row: len(str(row[colIndex])),
-                        self.rows) + [0]) # to handle the case where there are no rows
+        return max ([len(str(row[colIndex])) for row in self.rows] + [0]) # to handle the case where there are no rows
 
 class Table:
     def __init__(self, numColumns=None, columnHeadings=None, columnFooters=None, rows=[], caption=None):
@@ -171,7 +170,7 @@ class Table:
         
     def _calc_col_widths(self):
         result = []
-        for colIndex in xrange(self.numColumns):
+        for colIndex in range(self.numColumns):
             result.append(self._calc_col_width(colIndex))
         return result
 
@@ -233,12 +232,12 @@ class TestTables(TestCase):
         t = Table(columnHeadings=['What', 'How much'])
         t.add_row(['Foo', 3])
         t.add_row(['Bar', 42])
-        print str(t)
+        print(str(t))
         self.assertEquals(str(t), expectedStr_2x2)
 
     def test_print_2x0(self):
         t = Table(columnHeadings=['What', 'How much'])
-        print str(t)
+        print(str(t))
         self.assertEquals(str(t), expectedStr_2x0)
         
     def test_print_4x3(self):
@@ -246,12 +245,12 @@ class TestTables(TestCase):
         t.add_row(['Foo', 3, -3, True])
         t.add_row(['Bar', 42, 42, 'Sid'])
         t.add_row(['Baz', 17, 42, 'Nancy'])
-        print str(t)
+        print(str(t))
         self.assertEquals(str(t), expectedStr_4x3)
 
     def test_parse_2x2(self):
         t = parse_table(expectedStr_2x2.split('\n'))
-        print str(t)
+        print(str(t))
         self.assertEquals(t.numColumns, 2)
         self.assertEquals(str(t), expectedStr_2x2)
 

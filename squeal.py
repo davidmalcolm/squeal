@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 # -*- coding: utf-8 -*-
 #
 # Copyright © 2009 Red Hat, Inc.
@@ -142,26 +142,26 @@ def run_query(args):
         try:
             options.debug_level = int(options.debug_level)
         except:
-            print 'The debugging level must be an integer from 0-9'
+            print('The debugging level must be an integer from 0-9')
     if options.debug_level is None:
         options.debug_level = 0
 
     # Initial debugging info:
     if options.debug_level > 0:
         from pprint import pprint
-        print 'Options: %s' % options
-        print 'Args: %s' % repr(args)
+        print('Options: %s' % options)
+        print('Args: %s' % repr(args))
     
     from squeal.query import QueryParser
     p = QueryParser()
     q = p.parse_args(options, args)
     if options.debug_level > 0:
-        print 'Query: %s' % q
+        print('Query: %s' % q)
     if options.format:
         try:
             formatter = formatters[options.format]
         except KeyError:
-            print >> sys.stderr, "Unknown formatter: %s" % options.format
+            sys.stderr.write("Unknown formatter: %s\n" % options.format)
             sys.exit(2)
         formatter(q, sys.stdout)
     else:

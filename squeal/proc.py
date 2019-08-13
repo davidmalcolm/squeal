@@ -15,7 +15,7 @@
 # 
 # Red Hat Author(s): David Hugh Malcolm <dmalcolm@redhat.com>
 
-from query import *
+from squeal.query import *
 import os
 class Proc(DictSource):
     def get_columns(self):

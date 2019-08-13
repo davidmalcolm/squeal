@@ -53,7 +53,7 @@ class FileDictSource(DictSource):
             if d:
                 yield d
             else:
-                print >> sys.stderr, "Unmatched line :", line
+                sys.stderr.write("Unmatched line :%s\n" % line)
 
     def get_lines(self):
         f = open(self.filename)
@@ -137,7 +137,7 @@ class StreamDictSource(DictSource):
             if m:
                 return m.groups()
             else:
-                print "couldn't match:", line
+                print("couldn't match:%s" % line)
         else:
             if self.field_separator:
                 return line.strip().split(self.field_separator)
@@ -199,7 +199,7 @@ class Database(object):
 
         try:
             from pysqlite2 import dbapi2 as sqlite
-        except ImportError, e:
+        except ImportError as e:
             try:
                 from sqlite3 import dbapi2 as sqlite
             except ImportError:
@@ -211,8 +211,8 @@ class Database(object):
         sql += ',\n    '.join('%s %s' % (c.name, c.sql_type()) for c in columns)
         sql += '\n  )'
         if self.options.debug_level >= 5:
-            print 'sqlite table creation:'
-            print sql
+            print('sqlite table creation:')
+            print(sql)
         c.execute(sql)
         self.conn.commit()
         c.close()
@@ -241,11 +241,11 @@ class Database(object):
         sql += ' FROM lines '
         sql += ' '.join(stuff) # FIXME: ditto; sqlalchemy?
         if self.options.debug_level >= 5:
-            print 'sqlite generated query:', sql
+            print('sqlite generated query: %s' % sql)
         try:
             cursor.execute(sql)
         except:
-            print 'Exception executing: %s' %sql
+            print('Exception executing: %s' % sql)
             raise
         for row in cursor:
             yield row
@@ -310,8 +310,8 @@ class QueryParser(object):
             else:
                 result += self._tokenize_str(arg)
         if options.debug_level >= 5:
-            print 'split_args(%s) -> %s' \
-                  % (repr(args), repr(result))
+            print('split_args(%s) -> %s'
+                  % (repr(args), repr(result)))
         return result
 
     def _tokenize_str(self, string):
@@ -379,7 +379,7 @@ class QueryParser(object):
 
         if inputs == []:
             # FIXME: handle this better! e.g. introspect and show the backends?
-            raise "No inputs"
+            raise ValueError("No inputs")
 
         #print 'inputs:',inputs
         if len(inputs)>1:
